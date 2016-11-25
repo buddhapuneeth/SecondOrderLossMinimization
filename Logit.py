@@ -105,6 +105,85 @@ def hinge_gradient(thetas, X, y):
     return grad
 
 #code for hinge loss - stop
+
+#code for Adagrad - start
+def grad_desc_adagrad(theta_values, X, y, lr = 0.001, converge_change = 0.001, e = 1e-8):
+    #standardizing X
+    X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
+    cost_iter = []
+    cost = cost_func(theta_values,X,y)
+    cost_iter.append([0,cost])
+    change_cost = 1
+    i =1
+    G_matrix = np.zeros((2,2))
+    while(change_cost > converge_change):
+        old_cost = cost
+        g = log_gradient(theta_values, X, y)
+        for i in range(theta_values.size):
+            G_matrix[i,i] = G_matrix[i,i]+(g[i]*g[i])
+            G_denominator = G_matrix[i,i] + e
+            G_denominator = math.sqrt(G_denominator)
+            theta_values[i] = theta_values[i] - (lr * g[i]/G_denominator)
+        cost = cost_func(theta_values, X, y)
+        cost_iter.append([i, cost])
+        change_cost = old_cost - cost
+        i+=1
+    return theta_values, np.array(cost_iter)
+#code for Adagrad - stop
+#code for RMSProp - start
+def grad_desc_rmsprop(theta_values, X, y, lr = 0.001, converge_change = 0.001, e = 1e-8, gamma = 0.9):
+    #standardizing X
+    X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
+    cost_iter = []
+    cost = cost_func(theta_values,X,y)
+    cost_iter.append([0,cost])
+    change_cost = 1
+    i =1
+    G_matrix = np.zeros((theta_values.size,theta_values.size))
+    while(change_cost > converge_change):
+        old_cost = cost
+        g = log_gradient(theta_values, X, y)
+        for i in range(theta_values.size):
+            G_matrix[i,i] = gamma*G_matrix[i,i]+(1.0-gamma)*(g[i]*g[i])
+            G_denominator = G_matrix[i,i] + e
+            G_denominator = math.sqrt(G_denominator)
+            theta_values[i] = theta_values[i] - (lr * g[i]/G_denominator)
+        cost = cost_func(theta_values, X, y)
+        cost_iter.append([i, cost])
+        change_cost = old_cost - cost
+        i+=1
+    return theta_values, np.array(cost_iter)
+#code for RMSProp - stop
+
+#code for Adam - start
+def grad_desc_adam(theta_values, X, y, lr = 0.001, converge_change = 0.001, e = 1e-8, gamma = 0.9, b1 = 0.999, b2 = math.pow(10,-8)):
+    #standardizing X
+    X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
+    cost_iter = []
+    cost = cost_func(theta_values,X,y)
+    cost_iter.append([0,cost])
+    change_cost = 1
+    i =1
+    mom = np.zeros(theta_values.size)
+    vel = np.zeros(theta_values.size)
+
+    while(change_cost > converge_change):
+        old_cost = cost
+        g = log_gradient(theta_values, X, y)
+        for i in range(theta_values.size):
+            mom[i] = b1 * mom[i] + (1 - b1) * g[i]
+            vel[i] = b2 * vel[i] + (1 - b2) * (g[i]*g[i])
+            mom_bias_corrected_val = mom[i]/(1-math.pow(b1,i+1))
+            vel_bias_corrected_val = vel[i]/(1-math.pow(b2,i+1))
+            denominator = math.sqrt(vel_bias_corrected_val)+e
+            theta_values[i] = theta_values[i] - (lr* mom_bias_corrected_val)/denominator
+        cost = cost_func(theta_values, X, y)
+        cost_iter.append([i, cost])
+        change_cost = old_cost - cost
+        i+=1
+    return theta_values, np.array(cost_iter)
+#code for Adam - stop
+
 # main code
 shape = X.shape[1]
 y_flip = np.logical_not(Y)
@@ -117,7 +196,13 @@ betas = np.zeros(shape)
 # for hinge loss
 #fitted_values, cost_iter = grad_desc_hinge(betas, X, y_flip)
 # enthropy loss
-fitted_values, cost_iter = grad_desc(betas, X, y_flip)
+#fitted_values, cost_iter = grad_desc(betas, X, y_flip)
+# adagrad
+#fitted_values, cost_iter = grad_desc_adagrad(betas, X, y_flip)
+# rmsprop
+#fitted_values, cost_iter = grad_desc_rmsprop(betas, X, y_flip)
+#adam
+fitted_values, cost_iter = grad_desc_adam(betas, X, y_flip)
 print(fitted_values)
 predicted_y = pred_values(fitted_values, X)
 print predicted_y
