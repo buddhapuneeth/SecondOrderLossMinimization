@@ -13,41 +13,49 @@ X_full = data.data[:100,:]
 #versicolor = plt.scatter(X[50:,0],X[50:,1],c='r')
 #sns.despine()
 #plt.show()
-
+alpha = 0.1
 #code for logit - start
-def grad_desc(theta_values, X, y, lr = 0.001, converge_change = 0.001):
+def grad_desc(theta_values, X, y, L2= False, lr = 0.001, converge_change = 0.001):
     #standardizing X
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
     cost_iter = []
-    cost = cost_func(theta_values,X,y)
+    cost = cost_func(theta_values,X,y, L2= L2)
     cost_iter.append([0,cost])
     change_cost = 1
     i =1
     while(change_cost > converge_change):
         old_cost = cost
-        theta_values = theta_values - (lr * log_gradient(theta_values, X, y))
-        cost = cost_func(theta_values, X, y)
+        theta_values = theta_values - (lr * log_gradient(theta_values, X, y,L2=L2))
+        cost = cost_func(theta_values, X, y, L2= L2)
         cost_iter.append([i, cost])
         change_cost = old_cost - cost
-        i+=1
+        i = i+ 1
+    print "Total iterations:", i
     return theta_values, np.array(cost_iter)
 
 
 def logistic_func(thetas, X):
     return float(1)/(1+math.e**(-X.dot(thetas)))
 
-def cost_func(thetas, X,y):
+def cost_func(thetas, X,y,L2= False):
     log_func_v = logistic_func(thetas,X)
     y = np.squeeze(y)
     step1 = y * np.log(log_func_v)
     step2 = (1-y) * np.log(1 - log_func_v)
     final = -step1 - step2
-    return np.mean(final)
+    if L2 == False:
+        return np.mean(final)
+    else:
+        return np.mean(final) + float((alpha/2)*(thetas*thetas).sum(axis=0))
+    #return np.sum(final)
 
-def log_gradient(theta, x, y):
+def log_gradient(theta, x, y, L2= False):
     first_calc = logistic_func(theta, x) - np.squeeze(y)
     final_calc = first_calc.T.dot(x)
-    return final_calc
+    if L2 == False:
+        return final_calc
+    else:
+        return final_calc + alpha*theta
 
 def pred_values(theta, X, hard=True):
     #normalize
@@ -75,15 +83,25 @@ def grad_desc_hinge(theta_values, X, y, lr = 0.001, converge_change = 0.001):
         cost = cost_func_hinge(theta_values, X, y)
         cost_iter.append([i, cost])
         change_cost = old_cost - cost
-        i+=1
+        i = i+ 1
+    print "Total iterations:", i
     return theta_values, np.array(cost_iter)
 
 def cost_func_hinge(thetas, X,y):
-    y = np.squeeze(y)
-    hinge_func_v = y*(X.dot(thetas)) #y*np.dot(thetas,X)
-    zero_th = np.zeros(X.shape[0]) # 1-hinge_func_v
-    final = np.maximum(zero_th, 1-hinge_func_v)
-    return np.mean(final)
+    #IMPL 1
+    # y = np.squeeze(y)
+    # hinge_func_v = y*(X.dot(thetas)) #y*np.dot(thetas,X)
+    # zero_th = np.zeros(X.shape[0]) # 1-hinge_func_v
+    # final = np.maximum(zero_th, 1-hinge_func_v)
+    # #return np.mean(final)
+    # return np.sum(final)
+
+    #IMPL2
+    loss = 0
+    for (x_,y_) in zip(X,y):
+        v = y_*np.dot(thetas,x_)
+        loss += max(0,1-v)
+    return np.mean(loss)
 
 def hinge_gradient(thetas, X, y):
     grad = 0
@@ -114,7 +132,7 @@ def grad_desc_adagrad(theta_values, X, y, lr = 0.001, converge_change = 0.001, e
     cost = cost_func(theta_values,X,y)
     cost_iter.append([0,cost])
     change_cost = 1
-    i =1
+    j =1
     G_matrix = np.zeros((2,2))
     while(change_cost > converge_change):
         old_cost = cost
@@ -125,9 +143,10 @@ def grad_desc_adagrad(theta_values, X, y, lr = 0.001, converge_change = 0.001, e
             G_denominator = math.sqrt(G_denominator)
             theta_values[i] = theta_values[i] - (lr * g[i]/G_denominator)
         cost = cost_func(theta_values, X, y)
-        cost_iter.append([i, cost])
+        cost_iter.append([j, cost])
         change_cost = old_cost - cost
-        i+=1
+        j+=1
+    print "Total iterations:",j
     return theta_values, np.array(cost_iter)
 #code for Adagrad - stop
 #code for RMSProp - start
@@ -138,7 +157,7 @@ def grad_desc_rmsprop(theta_values, X, y, lr = 0.001, converge_change = 0.001, e
     cost = cost_func(theta_values,X,y)
     cost_iter.append([0,cost])
     change_cost = 1
-    i =1
+    j =1
     G_matrix = np.zeros((theta_values.size,theta_values.size))
     while(change_cost > converge_change):
         old_cost = cost
@@ -149,9 +168,10 @@ def grad_desc_rmsprop(theta_values, X, y, lr = 0.001, converge_change = 0.001, e
             G_denominator = math.sqrt(G_denominator)
             theta_values[i] = theta_values[i] - (lr * g[i]/G_denominator)
         cost = cost_func(theta_values, X, y)
-        cost_iter.append([i, cost])
+        cost_iter.append([j, cost])
         change_cost = old_cost - cost
-        i+=1
+        j =j+1
+    print "Total iterations:",j
     return theta_values, np.array(cost_iter)
 #code for RMSProp - stop
 
@@ -163,7 +183,7 @@ def grad_desc_adam(theta_values, X, y, lr = 0.001, converge_change = 0.001, e = 
     cost = cost_func(theta_values,X,y)
     cost_iter.append([0,cost])
     change_cost = 1
-    i =1
+    j =1
     mom = np.zeros(theta_values.size)
     vel = np.zeros(theta_values.size)
 
@@ -178,9 +198,10 @@ def grad_desc_adam(theta_values, X, y, lr = 0.001, converge_change = 0.001, e = 
             denominator = math.sqrt(vel_bias_corrected_val)+e
             theta_values[i] = theta_values[i] - (lr* mom_bias_corrected_val)/denominator
         cost = cost_func(theta_values, X, y)
-        cost_iter.append([i, cost])
+        cost_iter.append([j, cost])
         change_cost = old_cost - cost
-        i+=1
+        j=j+1
+    print "Total iterations:",j
     return theta_values, np.array(cost_iter)
 #code for Adam - stop
 
@@ -196,13 +217,27 @@ betas = np.zeros(shape)
 # for hinge loss
 #fitted_values, cost_iter = grad_desc_hinge(betas, X, y_flip)
 # enthropy loss
-#fitted_values, cost_iter = grad_desc(betas, X, y_flip)
+fitted_values, cost_iter = grad_desc(betas, X, y_flip,L2= False)
 # adagrad
 #fitted_values, cost_iter = grad_desc_adagrad(betas, X, y_flip)
 # rmsprop
 #fitted_values, cost_iter = grad_desc_rmsprop(betas, X, y_flip)
 #adam
-fitted_values, cost_iter = grad_desc_adam(betas, X, y_flip)
+#fitted_values, cost_iter = grad_desc_adam(betas, X, y_flip)
 print(fitted_values)
-predicted_y = pred_values(fitted_values, X)
-print predicted_y
+
+# plt.plot(cost_iter[:,0], cost_iter[:,1])
+# plt.ylabel("Cost")
+# plt.xlabel("Iteration")
+# sns.despine()
+# plt.show()
+# plt.plot([0, bias_vector[0]/weight_matrix[0][1]],
+#          [ bias_vector[1]/weight_matrix[0][0], 0], c = 'g', lw = 3)
+setosa = plt.scatter(X[:50,0], X[:50,1], c='b')
+versicolor = plt.scatter(X[50:,0], X[50:,1], c='r')
+plt.xlabel("Sepal Length")
+plt.ylabel("Sepal Width")
+plt.legend((setosa, versicolor), ("Setosa", "Versicolor"))
+sns.despine()
+plt.show()
+
