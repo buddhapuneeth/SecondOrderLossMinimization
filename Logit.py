@@ -1,6 +1,7 @@
 from sklearn import datasets
 from sklearn.datasets.samples_generator import make_blobs
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import numpy as np
 import math
@@ -14,13 +15,16 @@ X, Y = make_blobs(n_samples=5000, centers=2, n_features=2,cluster_std=10.0 ,cent
 #alpha = 100 # GD
 alpha = 2
 #code for logit - start
-def grad_desc(theta_values, X, y, L2= False, lr = 0.001, converge_change = 0.001):
+def grad_desc(theta_values, X, y, L2= False, lr = 0.0001, converge_change = 0.001):
     #standardizing X
 
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
     bias = 1
     X = np.hstack ((X, [[bias]] * len (X) ))
     cost_iter = []
+    theta_iter1 = []
+    theta_iter2 = []
+    theta_iter3 = []
     cost = cost_func(theta_values,X,y, L2= L2)
     cost_iter.append([0,cost])
     change_cost = 1
@@ -28,13 +32,16 @@ def grad_desc(theta_values, X, y, L2= False, lr = 0.001, converge_change = 0.001
     while(change_cost > converge_change):
         old_cost = cost
         theta_values = theta_values - (lr * log_gradient(theta_values, X, y,L2=L2))
+        theta_iter1.append(([i,theta_values[0]]))
+        theta_iter2.append(([i,theta_values[1]]))
+        theta_iter3.append(([i,theta_values[2]]))
         cost = cost_func(theta_values, X, y, L2= L2)
         cost_iter.append([i, cost])
         change_cost = old_cost - cost
         i = i+ 1
     print "Total iterations:", i
     print cost_iter[i-1]
-    return theta_values, np.array(cost_iter)
+    return theta_values, np.array(cost_iter), np.array(theta_iter1),np.array(theta_iter2),np.array(theta_iter3)
 
 
 def logistic_func(thetas, X):
@@ -286,7 +293,7 @@ def grad_desc_adam(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0
 shape = X.shape[1]
 #y_flip = np.logical_not(Y)
 betas_hinge = np.zeros(shape)
-betas = np.array([0.1, 0.2, 0.1])
+betas = np.array([0.1, 0.1, 0.1])
     #np.zeros(shape+1)
 # fitted_values, cost_iter = grad_desc(betas, X, y_flip)
 # print(fitted_values)
@@ -297,13 +304,13 @@ betas = np.array([0.1, 0.2, 0.1])
 #fitted_values, cost_iter = grad_desc_hinge(betas_hinge, X, Y)
 #predicted_y = pred_values_hinge(fitted_values, X)
 # enthropy loss
-#fitted_values, cost_iter = grad_desc(betas, X, Y)
+fitted_values, cost_iter, weight_iter1,weight_iter2,weight_iter3 = grad_desc(betas, X, Y)
 # adagrad
 #fitted_values, cost_iter = grad_desc_adagrad(betas, X, Y, L2 = True)
 # rmsprop
 #fitted_values, cost_iter = grad_desc_rmsprop(betas, X, Y,  L2 = True)
 #adam
-fitted_values, cost_iter = grad_desc_adam(betas, X, Y,  L2 = True)
+#fitted_values, cost_iter = grad_desc_adam(betas, X, Y,  L2 = True)
 print(fitted_values)
 
 predicted_y = pred_values(fitted_values, X)
@@ -322,12 +329,28 @@ for i in range(Y.size):
         failures = failures + 1
 print "Success:", count
 print "failures:",failures
+print "w1", weight_iter1[:,1]
+print "w2", weight_iter2[:,1]
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.plot(weight_iter1[:,1], weight_iter2[:,1],weight_iter3[:,1],linestyle = '-.', label='parametric curve')
+ax.set_xlabel('W1')
+ax.set_ylabel('W2')
+ax.set_zlabel('W3')
 
-plt.plot(cost_iter[:,0], cost_iter[:,1])
-plt.ylabel("Cost")
-plt.xlabel("Iteration")
-sns.despine()
+ax.legend()
 plt.show()
+
+# plt.plot(weight_iter[:,0], weight_iter[:,1])
+# plt.ylabel("W1")
+# plt.xlabel("Iteration")
+# sns.despine()
+# plt.show()
+# plt.plot(cost_iter[:,0], cost_iter[:,1])
+# plt.ylabel("Cost")
+# plt.xlabel("Iteration")
+# sns.despine()
+# plt.show()
 
 
 # plt.plot([0, bias_vector[0]/weight_matrix[0][1]],
