@@ -7,19 +7,19 @@ import numpy as np
 import math
 from random import randint
 
-data = datasets.load_iris()
-# X = data.data[:100,:2]
-# Y = data.target[:100]
-# #X_full = data.data[:100,:]
+
 #X, Y = make_blobs(n_samples=5000, centers=2, n_features=2,cluster_std=10.0 ,center_box=(-10.0,10.0) ,shuffle = True, random_state= 10)
 
-#data1
+#data1- less scattered, clearly sepearable
 X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=3, center_box=(-10.0, 10.0), shuffle=True,random_state=1)
-#data 2
+#data2- overlapped data
 #X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=15, center_box=(-10.0, 10.0), shuffle=True,random_state=1)
-X_test30 = (X[900:,:])
-Y_test30 = Y[900:]
-#To add error at the end
+
+alpha = 2 # for L2 norm
+
+#To add error at the end - This creates noise in last 100 inputs.
+#X_test30 = (X[900:,:])
+#Y_test30 = Y[900:]
 # for i in range(Y_test30.size):
 #     a = X_test30[i][0]
 #     b = X_test30[i][1]
@@ -36,7 +36,7 @@ Y_test30 = Y[900:]
 #     X[900+i][1] = b
 #     Y[900+i] = c
 
-#To add noise in intermidiate data
+#To add noise in intermidiate data - This uniformly distributes error over in 10% of the data
 # k = 0
 # for j in range(100):
 #     a = X[k][0]
@@ -57,7 +57,7 @@ Y_test30 = Y[900:]
 
 
 
-
+#MultiFeauture set: This code is to increase feature set from 2 to 5: X, Y, X*X, X*Y, Y*Y
 # X_new = np.zeros((X.shape[0],3))
 # i =0
 # for item in X:
@@ -69,12 +69,10 @@ Y_test30 = Y[900:]
 #     i = i +1
 # X = X_new
 
-#alpha = 100 # GD
-alpha = 200
+
 #code for logit - start
 def grad_desc(theta_values, X, y, L2= False, lr = 0.01, converge_change = 0.0001):
     #standardizing X
-
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
     bias = 1
     X = np.hstack ((X, [[bias]] * len (X) ))
@@ -101,13 +99,11 @@ def grad_desc(theta_values, X, y, L2= False, lr = 0.01, converge_change = 0.0001
     return theta_values, np.array(cost_iter), np.array(theta_iter1),np.array(theta_iter2),np.array(theta_iter3)
 
 
-def logistic_func(thetas, X):
-    # bias = 1
-    # x_withbias = np.hstack ((X, [[bias]] * len (X) ))
+def logit(thetas, X):
     return float(1)/(1+math.e**(-X.dot(thetas)))
 
 def cost_func(thetas, X,y,L2= False):
-    log_func_v = logistic_func(thetas,X)
+    log_func_v = logit(thetas,X)
     y = np.squeeze(y)
     step1 = y * np.log(log_func_v)
     step2 = (1-y) * np.log(1 - log_func_v)
@@ -117,13 +113,10 @@ def cost_func(thetas, X,y,L2= False):
     else:
         L2_factor = float((alpha/2)*(thetas*thetas).sum(axis=0))
         return np.mean(final) + L2_factor
-    #return np.sum(final)
+
 
 def log_gradient(theta, x, y, L2= False):
-    first_calc = logistic_func(theta, x) - np.squeeze(y)
-    # bias = 1
-    #
-    # x_withbias = np.hstack ((x, [[bias]] * len (x) ))
+    first_calc = logit(theta, x) - np.squeeze(y)
     final_calc = first_calc.T.dot(x)
     if L2 == False:
         return final_calc
@@ -132,99 +125,19 @@ def log_gradient(theta, x, y, L2= False):
         return final_calc + L2_factor
 
 def pred_values(theta, X, hard=True):
-    #normalize
+    #standardizing X
     X = (X - np.mean(X, axis=0)) / np.std(X, axis=0)
     bias = 1
     X = np.hstack ((X, [[bias]] * len (X) ))
-    pred_prob = logistic_func(theta, X)
+    pred_prob = logit(theta, X)
     pred_value = np.where(pred_prob >= .5, 1, 0)
     if hard:
         return pred_value
     return pred_prob
-def pred_values_hinge(theta, X, hard=True):
-    #normalize
-    X = (X - np.mean(X, axis=0)) / np.std(X, axis=0)
-    pred_prob = logistic_func(theta, X)
-    pred_value = np.where(pred_prob >= .5, 1, -1)
-    if hard:
-        return pred_value
-    return pred_prob
+
 #code for logit - stop
 
-#code for hinge loss - start
-def grad_desc_hinge(theta_values, X, y, L2 = False, lr = 0.001, converge_change = 0.0001):
-    #standardizing X
-    X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
-    y[y==0] = -1
-    cost_iter = []
-    cost = cost_func_hinge(theta_values,X,y, L2= L2)
-    cost_iter.append([0,cost])
-    change_cost = 1
-    i =1
-    while(change_cost > converge_change):
-        old_cost = cost
-        theta_values = theta_values - (lr * hinge_gradient(theta_values, X, y, L2= L2))
-        cost = cost_func_hinge(theta_values, X, y, L2= L2)
-        cost_iter.append([i, cost])
-        change_cost = old_cost - cost
-        i = i+ 1
-    print "Total iterations:", i
-    print cost_iter[i-1]
-    return theta_values, np.array(cost_iter)
 
-def cost_func_hinge(thetas, X,y, L2 = False):
-    #IMPL 1
-    # y = np.squeeze(y)
-    # hinge_func_v = y*(X.dot(thetas)) #y*np.dot(thetas,X)
-    # zero_th = np.zeros(X.shape[0]) # 1-hinge_func_v
-    # final = np.maximum(zero_th, 1-hinge_func_v)
-    # #return np.mean(final)
-    # return np.sum(final)
-
-    #IMPL 2
-    loss = 0
-    bias = -1
-
-    x_withbias = X
-        #np.hstack ((X, [[bias]] * len (X) ))
-    for (x_,y_) in zip(x_withbias,y):
-        v = y_*np.dot(thetas,x_)
-        loss += max(0,1-v)
-    if L2 == False:
-        return loss/1000
-    else:
-        L2_factor = float((alpha/2)*(thetas*thetas).sum(axis=0))
-        return loss + L2_factor
-
-def hinge_gradient(thetas, X, y, L2 = False):
-    grad = 0
-    bias = -1
-    x_withbias = X
-        #np.hstack ((X, [[bias]] * len (X) ))
-
-    for (x_,y_) in zip(x_withbias,y):
-        v = y_*np.dot(thetas,x_)
-        grad += 0 if v > 1 else -y_*x_
-
-    # hinge_func_v =  y*(X.dot(thetas))
-    # for
-    # temp_prod = -y*X
-    # grad = []
-    # for a,b in hinge_func_v,temp_prod:
-    #     g = 0 if a>1 else b
-    #     grad.append(g)
-    # # for a,b,v in X,y, hinge_func_v:
-    # #     g =0 if v > 1 else -b*a
-    # #     grad.append(a)
-    #grad = grad/np.linalg.norm(grad)
-    if L2 == False:
-        grad = grad/np.linalg.norm(grad)
-    else:
-        L2_factor = alpha*thetas
-        grad = grad/np.linalg.norm(grad)+ L2_factor
-        #grad = grad/np.linalg.norm(grad)
-    return grad
-#code for hinge loss - stop
 
 #code for Adagrad - start
 def grad_desc_adagrad(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0.001, e = 1e-8):
@@ -256,34 +169,7 @@ def grad_desc_adagrad(theta_values, X, y,L2 = False, lr = 0.01, converge_change 
     print cost_iter[j-1]
     return theta_values, np.array(cost_iter)
 #code for Adagrad - stop
-def hinge_grad_desc_adagrad(theta_values, X, y,L2 = False, lr = 0.001, converge_change = 0.001, e = 1e-8):
-    #standardizing X
 
-    X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
-    bias = 1
-    X = np.hstack ((X, [[bias]] * len (X) ))
-    cost_iter = []
-    cost = cost_func_hinge(theta_values,X,y,L2 = L2)
-    cost_iter.append([0,cost])
-    change_cost = 1
-    j =1
-    G_matrix = np.zeros((theta_values.size,theta_values.size))
-    while(change_cost > converge_change):
-        old_cost = cost
-        g = hinge_gradient(theta_values, X, y,L2 = L2)
-        for i in range(theta_values.size):
-            G_matrix[i,i] = G_matrix[i,i]+(g[i]*g[i])
-            G_denominator = G_matrix[i,i] + e
-            G_denominator = math.sqrt(G_denominator)
-            theta_values[i] = theta_values[i] - (lr * g[i]/G_denominator)
-        cost = cost_func_hinge(theta_values, X, y,L2 = L2)
-        cost_iter.append([j, cost])
-        change_cost = old_cost - cost
-        j+=1
-    print "Total iterations:",j
-    print cost_iter
-    print cost_iter[j-1]
-    return theta_values, np.array(cost_iter)
 #code for RMSProp - start
 def grad_desc_rmsprop(theta_values, X, y,L2= False, lr = 0.001, converge_change = 0.001, e = 1e-8, gamma = 0.99):
     #standardizing X
@@ -347,37 +233,28 @@ def grad_desc_adam(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0
 #code for Adam - stop
 
 # main code
-shape = X.shape[1]
-#y_flip = np.logical_not(Y)
-#betas_hinge = np.zeros(shape)
-#betas = np.array([0.1, 0.1, 0.1,0.1])
-betas = np.array([0.1, 0.1, 0.1])
-    #np.zeros(shape+1)
-# fitted_values, cost_iter = grad_desc(betas, X, y_flip)
-# print(fitted_values)
-# predicted_y = pred_values(fitted_values, X)
-# print predicted_y
 
-# for hinge loss
-#fitted_values, cost_iter = grad_desc_hinge(betas_hinge, X, Y)
-#predicted_y = pred_values_hinge(fitted_values, X)
-# enthropy loss
-#fitted_values, cost_iter, weight_iter1,weight_iter2,weight_iter3 = grad_desc(betas, X, Y)
-# adagrad
-fitted_values, cost_iter = grad_desc_adagrad(betas, X, Y)
-# rmsprop
+#weights initialization
+#betas = np.array([0.1, 0.1, 0.1,0.1,0.1,0.1]) #use for 5 features
+#betas = np.array([0.1, 0.1, 0.1,0.1]) #use for 3 features
+betas = np.array([0.1, 0.1, 0.1]) #use for 2 features
+
+
+#enthropy loss
+fitted_values, cost_iter, weight_iter1,weight_iter2,weight_iter3 = grad_desc(betas, X, Y)
+
+#adagrad
+#fitted_values, cost_iter = grad_desc_adagrad(betas, X, Y)
+
+#rmsprop
 #fitted_values, cost_iter = grad_desc_rmsprop(betas, X, Y)
+
 #adam
 #fitted_values, cost_iter = grad_desc_adam(betas, X, Y)
+
 print(fitted_values)
-
 predicted_y = pred_values(fitted_values, X)
-
-
-
-
-#print Y
-#print predicted_y
+#checking accuracy
 count = 0
 failures = 0
 for i in range(Y.size):
@@ -387,11 +264,13 @@ for i in range(Y.size):
         failures = failures + 1
 print "Success:", count
 print "failures:",failures
+
+#To see range of weights, a experiment in L2
 # print np.amax(weight_iter2[:,1])
 # print np.amin(weight_iter2[:,1])
 
-# print "w1", weight_iter1[:,1]
-# print "w2", weight_iter2[:,1]
+
+#To plot weights
 # fig = plt.figure()
 # ax = fig.gca(projection='3d')
 # ax.plot(weight_iter1[:,1], weight_iter2[:,1],weight_iter3[:,1],linestyle = '-.', label='parametric curve')
@@ -401,13 +280,14 @@ print "failures:",failures
 # ax.legend()
 # plt.show()
 
+#To plot weight change (code to check change in single weight at a time)
 # plt.plot(weight_iter[:,0], weight_iter[:,1])
 # plt.ylabel("W1")
 # plt.xlabel("Iteration")
 # sns.despine()
 # plt.show()
 
-
+#Code to see cost function
 # plt.plot(cost_iter[:,0], cost_iter[:,1])
 # plt.ylabel("Cost")
 # plt.xlabel("Iteration")
@@ -415,15 +295,14 @@ print "failures:",failures
 # plt.show()
 
 
-# plt.plot([0, bias_vector[0]/weight_matrix[0][1]],
-#          [ bias_vector[1]/weight_matrix[0][0], 0], c = 'g', lw = 3)
-X_dash1 = []
-X_dash2 = []
-for i in range(Y.size):
-    if Y[i] == 1:
-        X_dash1.append(X[i])
-    else:
-        X_dash2.append(X[i])
+#code to see input date - scatter graph
+# X_dash1 = []
+# X_dash2 = []
+# for i in range(Y.size):
+#     if Y[i] == 1:
+#         X_dash1.append(X[i])
+#     else:
+#         X_dash2.append(X[i])
 # X_dash1 = np.array(X_dash1)
 # X_dash2 = np.array(X_dash2)
 # x_axis = plt.scatter(X_dash1[:,0], X_dash1[:,1], c='b')

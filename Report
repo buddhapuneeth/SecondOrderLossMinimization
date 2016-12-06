@@ -1,0 +1,438 @@
+NLL with 3 optimazations with Out L2:Comparing Cost, iterations, accuracy
+
+data1:
+X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=3, center_box=(-10.0, 10.0), shuffle=True,random_state=1)
+Features: X_Y
+
+Case:NLL_GD_data1:
+
+Total iterations: 88
+[87, 0.17288621970188733]
+[-1.30782758 -1.31130093  0.03328063]
+Success: 972
+failures: 28
+
+data2:
+X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=15, center_box=(-10.0, 10.0), shuffle=True, 
+                  random_state=1)
+
+
+
+Features: X_Y
+
+Case:NLL_GD_data2:
+Total iterations: 35
+[34, 0.63978316898493648]
+[-0.26857435 -0.26518042  0.04281216]
+Success: 663
+failures: 337
+
+NLL with ADAGRAD without L2:
+
+Case:NLL_GD_AG_data1_X_Y:
+Total iterations: 57
+[56, 0.66728466836598743]
+[-0.03243724 -0.03244074  0.01118927]
+Success: 970
+failures: 30
+
+Case:NLL_GD_RMS_data1_X_Y:
+Total iterations: 74
+[73, 0.64409852675515644]
+[-0.06244912 -0.06245412  0.00427297]
+Success: 973
+failures: 27
+
+Case:NLL_GD_ADAM_data1_X_Y_1:
+at b1= 0.8 b2=0.1
+Total iterations: 58
+[57, 0.1018365010138383]
+[-4.16068305 -1.69156269  0.16888352]
+Success: 962
+failures: 38
+
+Case:NLL_GD_ADAM_data1_X_Y_2:
+at b1= 0.99 b2=0.1
+Total iterations: 19
+[18, 0.13065497961335695]
+[ -6.92287100e+00  -1.73604225e+00   4.59092022e-03]
+Success: 950
+failures: 50
+
+
+
+With L2 and data1:
+alpha = 0.01 lr = 0.001, converge_change = 0.001
+Case:NLL_GD_data1_L2:
+Total iterations: 21
+[20, 0.15268188246731651]
+[-1.88506664 -1.89113091  0.03832173]
+Success: 971
+failures: 29
+
+Case:NLL_GD_AG_data1_X_Y_L2:
+alpha = 4 lr = 0.001, converge_change = 0.001
+Total iterations: 46
+[45, 0.68072576105539584]
+[-0.01768855 -0.01769135  0.01603312]
+Success: 919
+failures: 81
+
+Case:NLL_GD_RMS_data1_X_Y_L2_1:
+Gamma = 0.99 (near to AG)
+alpha = 4 lr = 0.001, converge_change = 0.001
+
+Total iterations: 47
+[46, 0.67658632289375964]
+[-0.02402305 -0.02402603  0.01335632]
+Success: 963
+failures: 37
+
+
+Case:NLL_GD_RMS_data1_X_Y_L2_2:
+
+Gamma = 0.1 (near to AG)
+Total iterations: 88
+[87, 0.70475826284351217]
+[ 0.01294949  0.01294948  0.01316279]
+Success: 125
+failures: 875
+
+Case:NLL_GD_ADAM_data1_X_Y_L2
+at alpha = 2 b1= 0.8 b2=0.1
+Total iterations: 12
+[11, 0.6440568237900236]
+[-0.26914513 -0.113552   -0.06865016]
+Success: 948
+failures: 52
+
+
+
+---------
+
+CASE : HL_GD_data1_X_Y:
+lr = 0.01, converge_change = 0.01
+Total iterations: 52
+[51, 0.42395137301744135]
+[-0.36044043 -0.36080826]
+Success: 971
+failures: 29
+
+CASE : HL_GD_AG_data1_X_Y:
+lr = 0.3, converge_change = 0.0001, e = 1e-8
+Total iterations: 24
+[23, 0.5335607586429573]
+[-2.53371069 -2.3644774 ]
+Success: 486
+failures: 514
+
+
+CASE : HL_GD_RMS_data1_X_Y:
+lr = 0.3, converge_change = 0.0001, e = 1e-8, gamma = 0.99
+Total iterations: 25
+[24, 0.5336187773561949]
+[-2.48123794 -2.34265118]
+Success: 486
+failures: 514
+
+CASE: HL_GD_RMS_data1_X_Y:
+Total iterations: 129
+[128, 0.072626127722963216]
+[-4.12673394 -4.25290579]
+Success: 486
+failures: 514
+
+CASE: HL_GD_ADAM_data1_X_Y:
+Total iterations: 129
+[128, 0.072626127722963216]
+[-4.12673394 -4.25290579]
+Success: 486
+failures: 514
+
+CASE : HL_GD_data1_X_Y_L2:
+alpha = 4
+Total iterations: 15
+[14, 0.9684434544844873]
+[-0.02044848 -0.02052806]
+Success: 971
+failures: 29
+
+CASE : HL_GD_AG_data1_X_Y_L2:
+alpha = 1
+Total iterations: 20
+[19, 0.586018346208798]
+[-0.68386991 -0.72714025]
+Success: 486
+failures: 514
+
+
+CASE : HL_GD_RMS_data1_X_Y_L2:
+alpha = 1
+Total iterations: 20
+[19, 0.5861114532378]
+[-0.68368471 -0.72748339]
+Success: 486
+failures: 514
+
+
+CASE : HL_GD_ADAM_data1_X_Y_L2:
+Total iterations: 16
+[15, 0.63012638155888012]
+[-0.23341678 -0.14193631]
+Success: 483
+failures: 517
+
+------------------------------
+Impact of L2 on NLL:
+Data set 2:
+
+CASE : NLL_GD_data2_X_Y_:
+Total iterations: 869
+[868, 0.62104985904588006]
+[-0.47958332 -0.4743689   0.0141193 ]
+Success: 674
+failures: 326
+0.0983906051047
+-0.47958331609
+
+
+CASE: NLL_GD_data2_X_Y_L2:
+alpha = 1.5
+Total iterations: 134
+[133, 0.68738597514519084]
+[-0.08140412 -0.07976268  0.07158775]
+Success: 617
+failures: 383
+0.0984035866061
+-0.0797626830639
+
+alpha = 20
+Total iterations: 79
+[78, 0.75979562390748145]
+[-0.01442745 -0.01340839  0.08101935]
+Success: 500
+failures: 500
+0.0983850866061
+-0.0134083869501
+
+------------------------------
+Impact of L2 on HL:
+Data set 2:
+CASE : HL_GD_data2_X_Y_:
+Total iterations: 643
+[642, 0.4332357999103608]
+[-0.35372633 -0.35419853]
+Success: 971
+failures: 29
+0.099292527726
+-0.354198528056
+
+CASE: HL_GD_data2_X_Y_L2:
+alpha = 1.5
+Total iterations: 179
+[178, 0.9466055795668101]
+[-0.03392599 -0.03404029]
+Success: 971
+failures: 29
+0.099142527726
+-0.0340402903522
+
+alpha = 20
+Total iterations: 72
+[71, 0.9951551231881715]
+[-0.00309163 -0.00311948]
+Success: 971
+failures: 29
+0.097292527726
+-0.00311947891995
+
+--------------------------
+Convergence of L2 on NLLL over X*X, X*Y, Y*Y features of data2
+
+CASE : NLL_GD_data2_XX_XY_YY:
+Total iterations: 307
+[306, 0.6787046043706616]
+[ 0.21124094  0.15238627  0.05088982  0.04825086]
+Success: 574
+failures: 426
+0.152386270182
+0.100244511076
+
+CASE : NLL_GD_data2_XX_XY_YY_L2_20:
+Total iterations: 155
+[154, 4.1009545032314305]
+[ 0.13446115  0.10440703  0.05165666  0.05039   ]
+Success: 577
+failures: 423
+0.10440703345
+0.100044511076
+
+----------------------
+Stability in X_Y_ on NLL using Noise on Data 2
+
+CASE: NLL_GD_data2_X_Y_Pure:
+Total iterations: 869
+[868, 0.62104985904588006]
+[-0.47958332 -0.4743689   0.0141193 ]
+Success: 674
+failures: 326
+0.0984050866061
+-0.474368904247
+
+CASE: NLL_GD_data1_X_Y_Pure:
+Total iterations: 3165
+[3164, 0.10241960560849543]
+[-2.15710857 -2.16317142  0.0495137 ]
+Success: 972
+failures: 28
+
+CASE: NLL_GD_data2_X_Y_Modified:
+Total iterations: 789
+[788, 0.64111126640783167]
+[-0.31961846 -0.44812224  0.02619328]
+Success: 650
+failures: 350
+0.0984378172071
+-0.448122244879
+
+CASE: NLL_GD_data1_X_Y_Modified:
+Total iterations: 3153
+[3152, 0.21542549626168922]
+[-0.86405528 -2.72956531  0.05144398]
+Success: 937
+failures: 63
+
+CASE: NLL with ADAGRAD without L2:
+
+Case:NLL_GD_AG_data1_X_Y_pure:
+Total iterations: 57
+[56, 0.66728466836598743]
+[-0.03243724 -0.03244074  0.01118927]
+Success: 970
+failures: 30
+
+CASE::NLL_GD_AG_data1_X_Y_modified:
+Total iterations: 38
+[37, 0.68939961427244834]
+[-0.00530694 -0.00619621  0.03380782]
+Success: 507
+failures: 493
+
+
+
+Case:NLL_GD_RMS_data1_X_Y_pure:
+Gamma = 0.1
+Total iterations: 74
+[73, 0.64409852675515644]
+[-0.06244912 -0.06245412  0.00427297]
+Success: 973
+failures: 27
+
+
+Case:NLL_GD_RMS_data1_X_Y_modified:
+Gamma = 0.99
+Total iterations: 44
+[43, 0.68106579813659218]
+[-0.01863451 -0.0197386   0.03748043]
+Success: 598
+failures: 402
+
+Gamma = 0.8
+Total iterations: 27
+[26, 0.7153042214857861]
+[ 0.03548268  0.03515591  0.05067602]
+Success: 302
+failures: 698
+
+Case:NLL_GD_ADAM_data1_X_Y_pure:
+Total iterations: 58
+[57, 0.1018365010138383]
+[-4.16068305 -1.69156269  0.16888352]
+Success: 962
+failures: 38
+
+
+Case:NLL_GD_ADAM_data1_X_Y_Modified:
+ lr = 0.01, converge_change = 0.001, e = 1e-8, b1 = 0.8, b2 = 0.1
+Total iterations: 92
+[91, 0.21577019330407984]
+[-0.91261954 -2.57547161  0.00460402]
+Success: 937
+failures: 63
+
+------
+In above experiments we added noise at the end. Now we will add in between.
+CASE : GD
+Total iterations: 3121
+[3120, 0.20424585560655872]
+[-0.95692562 -2.6845948   0.06977313]
+Success: 938
+failures: 62
+
+CASE: AG
+Total iterations: 39
+[38, 0.68846433509874394]
+[-0.00686949 -0.00776313  0.0232515 ]
+Success: 505
+failures: 495
+CASE: RMS
+Gamma = 0.99
+Total iterations: 45
+[44, 0.68018972167230596]
+[-0.02025965 -0.02143867  0.01117939]
+Success: 915
+failures: 85
+
+
+CASE: ADAM
+Total iterations: 90
+[89, 0.20941313898218941]
+[-1.02389949 -2.50280979  0.05856116]
+Success: 938
+failures: 62
+
+
+----------------
+Goal: Quadratic features are not that better in HL like in NLL 
+  	  L2 will improve HL in this case
+  	  
+X^2, XY, Y^2 on HL data2
+
+CASE: HL on X_Y_data1
+Total iterations: 643
+[642, 0.4332357999103608]
+[-0.35372633 -0.35419853]
+Success: 971
+failures: 29
+0.099292527726
+-0.354198528056
+
+
+
+CASE: HL on X^2, XY, Y^2 data1
+thetas [ 0.1  0.1  0.1]
+thetas [ 0.10074084  0.10066512  0.09990632]
+Total iterations: 2
+[1, 0.8698615832456305]
+[ 0.10074084  0.10066512  0.09990632]
+Success: 802
+failures: 198
+0.100665122691
+0.100665122691
+
+CASE: HL on X^2, XY, Y^2 data1 with L2
+alpha = 20
+Total iterations: 53
+[52, 1.0002867192170088]
+[ 0.0590182   0.05668267  0.03219082]
+Success: 853
+failures: 147
+0.0986651226909
+0.0566826739653
+
+
+
+
+
+
+
