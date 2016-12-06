@@ -5,17 +5,74 @@ from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import numpy as np
 import math
+from random import randint
 
 data = datasets.load_iris()
 # X = data.data[:100,:2]
 # Y = data.target[:100]
 # #X_full = data.data[:100,:]
-X, Y = make_blobs(n_samples=5000, centers=2, n_features=2,cluster_std=10.0 ,center_box=(-10.0,10.0) ,shuffle = True, random_state= 10)
+#X, Y = make_blobs(n_samples=5000, centers=2, n_features=2,cluster_std=10.0 ,center_box=(-10.0,10.0) ,shuffle = True, random_state= 10)
+
+#data1
+X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=3, center_box=(-10.0, 10.0), shuffle=True,random_state=1)
+#data 2
+#X, Y = make_blobs(n_samples=1000, n_features=2, centers=2, cluster_std=15, center_box=(-10.0, 10.0), shuffle=True,random_state=1)
+X_test30 = (X[900:,:])
+Y_test30 = Y[900:]
+#To add error at the end
+# for i in range(Y_test30.size):
+#     a = X_test30[i][0]
+#     b = X_test30[i][1]
+#     c =0
+#     if(randint(0,1)==0):
+#         a = a+ randint(0,9)+ randint(0,9)
+#         b = b- randint(0,9)- randint(0,9)
+#         c = 1
+#     else:
+#         a = a- randint(0,9)- randint(0,9)
+#         b = b+ randint(0,9)+ randint(0,9)
+#         c =0
+#     X[900+i][0] = a
+#     X[900+i][1] = b
+#     Y[900+i] = c
+
+#To add noise in intermidiate data
+# k = 0
+# for j in range(100):
+#     a = X[k][0]
+#     b = X[k][1]
+#     c =0
+#     if(randint(0,1)==0):
+#         a = a+ randint(0,9)+ randint(0,9)
+#         b = b- randint(0,9)- randint(0,9)
+#         c = 1
+#     else:
+#         a = a- randint(0,9)- randint(0,9)
+#         b = b+ randint(0,9)+ randint(0,9)
+#         c =0
+#     X[k][0] = a
+#     X[k][1] = b
+#     Y[k] = c
+#     k = k+9
+
+
+
+
+# X_new = np.zeros((X.shape[0],3))
+# i =0
+# for item in X:
+#     # X_new[i][0] = X[i][0]
+#     # X_new[i][1] = X[i][1]
+#     X_new[i][0] = X[i][0]*X[i][0]
+#     X_new[i][1] = X[i][0]*X[i][1]
+#     X_new[i][2] = X[i][1]*X[i][1]
+#     i = i +1
+# X = X_new
 
 #alpha = 100 # GD
-alpha = 2
+alpha = 200
 #code for logit - start
-def grad_desc(theta_values, X, y, L2= False, lr = 0.0001, converge_change = 0.001):
+def grad_desc(theta_values, X, y, L2= False, lr = 0.01, converge_change = 0.0001):
     #standardizing X
 
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
@@ -95,7 +152,7 @@ def pred_values_hinge(theta, X, hard=True):
 #code for logit - stop
 
 #code for hinge loss - start
-def grad_desc_hinge(theta_values, X, y, L2 = False, lr = 0.001, converge_change = 0.001):
+def grad_desc_hinge(theta_values, X, y, L2 = False, lr = 0.001, converge_change = 0.0001):
     #standardizing X
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
     y[y==0] = -1
@@ -257,7 +314,7 @@ def grad_desc_rmsprop(theta_values, X, y,L2= False, lr = 0.001, converge_change 
 #code for RMSProp - stop
 
 #code for Adam - start
-def grad_desc_adam(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0.001, e = 1e-8, b1 = 0.99, b2 = 0.1):
+def grad_desc_adam(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0.001, e = 1e-8, b1 = 0.8, b2 = 0.1):
     #standardizing X
     X = (X-np.mean(X,axis=0)) / np.std(X,axis=0)
     bias = 1
@@ -292,7 +349,8 @@ def grad_desc_adam(theta_values, X, y,L2 = False, lr = 0.01, converge_change = 0
 # main code
 shape = X.shape[1]
 #y_flip = np.logical_not(Y)
-betas_hinge = np.zeros(shape)
+#betas_hinge = np.zeros(shape)
+#betas = np.array([0.1, 0.1, 0.1,0.1])
 betas = np.array([0.1, 0.1, 0.1])
     #np.zeros(shape+1)
 # fitted_values, cost_iter = grad_desc(betas, X, y_flip)
@@ -304,13 +362,13 @@ betas = np.array([0.1, 0.1, 0.1])
 #fitted_values, cost_iter = grad_desc_hinge(betas_hinge, X, Y)
 #predicted_y = pred_values_hinge(fitted_values, X)
 # enthropy loss
-fitted_values, cost_iter, weight_iter1,weight_iter2,weight_iter3 = grad_desc(betas, X, Y)
+#fitted_values, cost_iter, weight_iter1,weight_iter2,weight_iter3 = grad_desc(betas, X, Y)
 # adagrad
-#fitted_values, cost_iter = grad_desc_adagrad(betas, X, Y, L2 = True)
+fitted_values, cost_iter = grad_desc_adagrad(betas, X, Y)
 # rmsprop
-#fitted_values, cost_iter = grad_desc_rmsprop(betas, X, Y,  L2 = True)
+#fitted_values, cost_iter = grad_desc_rmsprop(betas, X, Y)
 #adam
-#fitted_values, cost_iter = grad_desc_adam(betas, X, Y,  L2 = True)
+#fitted_values, cost_iter = grad_desc_adam(betas, X, Y)
 print(fitted_values)
 
 predicted_y = pred_values(fitted_values, X)
@@ -329,23 +387,27 @@ for i in range(Y.size):
         failures = failures + 1
 print "Success:", count
 print "failures:",failures
-print "w1", weight_iter1[:,1]
-print "w2", weight_iter2[:,1]
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.plot(weight_iter1[:,1], weight_iter2[:,1],weight_iter3[:,1],linestyle = '-.', label='parametric curve')
-ax.set_xlabel('W1')
-ax.set_ylabel('W2')
-ax.set_zlabel('W3')
+# print np.amax(weight_iter2[:,1])
+# print np.amin(weight_iter2[:,1])
 
-ax.legend()
-plt.show()
+# print "w1", weight_iter1[:,1]
+# print "w2", weight_iter2[:,1]
+# fig = plt.figure()
+# ax = fig.gca(projection='3d')
+# ax.plot(weight_iter1[:,1], weight_iter2[:,1],weight_iter3[:,1],linestyle = '-.', label='parametric curve')
+# ax.set_xlabel('W1')
+# ax.set_ylabel('W2')
+# ax.set_zlabel('W3')
+# ax.legend()
+# plt.show()
 
 # plt.plot(weight_iter[:,0], weight_iter[:,1])
 # plt.ylabel("W1")
 # plt.xlabel("Iteration")
 # sns.despine()
 # plt.show()
+
+
 # plt.plot(cost_iter[:,0], cost_iter[:,1])
 # plt.ylabel("Cost")
 # plt.xlabel("Iteration")
@@ -355,11 +417,20 @@ plt.show()
 
 # plt.plot([0, bias_vector[0]/weight_matrix[0][1]],
 #          [ bias_vector[1]/weight_matrix[0][0], 0], c = 'g', lw = 3)
-# setosa = plt.scatter(X[:50,0], X[:50,1], c='b')
-# versicolor = plt.scatter(X[50:,0], X[50:,1], c='r')
-# plt.xlabel("Sepal Length")
-# plt.ylabel("Sepal Width")
-# plt.legend((setosa, versicolor), ("Setosa", "Versicolor"))
+X_dash1 = []
+X_dash2 = []
+for i in range(Y.size):
+    if Y[i] == 1:
+        X_dash1.append(X[i])
+    else:
+        X_dash2.append(X[i])
+# X_dash1 = np.array(X_dash1)
+# X_dash2 = np.array(X_dash2)
+# x_axis = plt.scatter(X_dash1[:,0], X_dash1[:,1], c='b')
+# y_axis = plt.scatter(X_dash2[:,0], X_dash2[:,1], c='r')
+# plt.xlabel("X")
+# plt.ylabel("Y")
+# plt.legend((x_axis, y_axis), ("X", "Y"))
 # sns.despine()
 # plt.show()
 
